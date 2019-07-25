@@ -20,3 +20,6 @@ function scrollToBottom() {
 }
 
 var interval = setInterval(scrollToBottom, 1000);
+
+//clearInterval(interval);
+//copy(audioTracks);
