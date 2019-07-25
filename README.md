@@ -6,4 +6,6 @@ Downloads using aria2 have the correct filename and can resume easily.
 `nix-shell`  
 `mkdir music`  
 `cd music`  
-`aria2c -i ../music.txt`
+`aria2c  --auto-file-renaming=false -x 8 -j 16  -i ../music.txt`  
+
+
