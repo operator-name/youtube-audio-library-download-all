@@ -1,7 +1,11 @@
 with import <nixpkgs> {};
 
-in stdenv.mkDerivation rec {
+stdenv.mkDerivation {
     name = "youtube-audio-library-download-all";
 
-    buildInputs = [ aria2 picard ];
+    buildInputs = [ 
+      aria2 
+      picard 
+      jq
+    ];
 }
