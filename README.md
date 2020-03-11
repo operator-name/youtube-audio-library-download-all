@@ -36,7 +36,7 @@ Sound effects are https://www.youtube.com/audioswap_ajax?action_get_tracks=1&dl=
 # max mr=1000
 aria2c --out=music0.json --load-cookies=cookies.txt 'https://www.youtube.com/audioswap_ajax?action_get_tracks=1&dl=true&s=music&mr=1000&si=0&qid=0&sh=true'
 
-jq -s 'reduce .[] as $item ({}; . * $item)' *.json
+jq -s 'reduce .[] as $item ({}; . * $item)' music*.json > music.json
 ```
 
 merge with `jq` then parse  
