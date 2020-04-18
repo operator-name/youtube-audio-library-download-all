@@ -6,73 +6,77 @@
 2. `cd music`
 3. `aria2c  --auto-file-renaming=false --max-connection-per-server=8 --max-concurrent-downloads=16 --input-file=music-1000.txt`
 
-`wget --content-disposition -i music-1000.txt` or `curl` also works, but you'll have to manually parallelise it with `xargs` or `parallel`. 
+Change `--max-connection-per-server` and `--max-concurrent-downloads` depending on your computer, internet and when youtube starts throttling you/putting up captchas. The current numbers have been tested once overnight and did not seem to produce any issues.
+
+`wget --content-disposition -i music-1000.txt` or `curl` also works, but you'll have to manually parallelise it with `xargs` or `parallel`. `aria2` also has the benifit of being able to automatically continue if interupted.  
 
 The overall download is ~30gb for both music and sound effects. Note that the current audio library at time of writing has the following songs with repeated titles, which may be overwritten when using the instructions. 
 
+```bash
++ jq -Sc '[{title:.tracks[].title}] | group_by(.title) | map(select(length > 1)) | map({(.[0].title):length}) | .[]' music-1000.json 
 ```
-$ jq -r '[.tracks[].title] | sort | .[]' music/music-1000.json |  uniq -cd | sort -nr
-      3 March On
-      3 Lullaby
-      2 Yankee Doodle
-      2 Wrong
-      2 When Johnny Comes Marching Home
-      2 Way Out West
-      2 Walk With Me
-      2 Undeniable
-      2 Travel Light
-      2 Timeless
-      2 The Heist
-      2 The End
-      2 Surrender
-      2 Sunday
-      2 Summer Nights
-      2 Star Spangled Banner
-      2 Smooth
-      2 Serenity
-      2 Run
-      2 Rollin
-      2 Road Trip
-      2 Rise
-      2 Riding
-      2 Quiet
-      2 Procession
-      2 Pressure
-      2 Payday
-      2 Over Time
-      2 Open Highway
-      2 Night Ride
-      2 Night Drive
-      2 Mountain
-      2 Monument
-      2 Mirror Mirror
-      2 Midnight
-      2 Meteor
-      2 Level Up
-      2 Invincible
-      2 Home
-      2 Hero Theme
-      2 Happy Feet
-      2 Greedy
-      2 Granite
-      2 Funk Down
-      2 Follow Me
-      2 Firefly
-      2 Ferris Wheel
-      2 Feel The Funk
-      2 Ether
-      2 Escape
-      2 Drunken Sailor
-      2 Drive
-      2 Don't Look
-      2 Dirt Road Traveler
-      2 Destination Unknown
-      2 Cycles
-      2 Cruiser
-      2 Contact
-      2 Bittersweet
-      2 Bar Crawl
-      2 Amazing Grace
+```json
+{"Amazing Grace":2}
+{"Bar Crawl":2}
+{"Bittersweet":2}
+{"Contact":2}
+{"Cruiser":2}
+{"Cycles":2}
+{"Destination Unknown":2}
+{"Dirt Road Traveler":2}
+{"Don't Look":2}
+{"Drive":2}
+{"Drunken Sailor":2}
+{"Escape":2}
+{"Ether":2}
+{"Feel The Funk":2}
+{"Ferris Wheel":2}
+{"Firefly":2}
+{"Follow Me":2}
+{"Funk Down":2}
+{"Granite":2}
+{"Greedy":2}
+{"Happy Feet":2}
+{"Hero Theme":2}
+{"Home":2}
+{"Invincible":2}
+{"Level Up":2}
+{"Lullaby":3}
+{"March On":3}
+{"Meteor":2}
+{"Midnight":2}
+{"Mirror Mirror":2}
+{"Monument":2}
+{"Mountain":2}
+{"Night Drive":2}
+{"Night Ride":2}
+{"Open Highway":2}
+{"Over Time":2}
+{"Payday":2}
+{"Pressure":2}
+{"Procession":2}
+{"Quiet":2}
+{"Riding":2}
+{"Rise":2}
+{"Road Trip":2}
+{"Rollin":2}
+{"Run":2}
+{"Serenity":2}
+{"Smooth":2}
+{"Star Spangled Banner":2}
+{"Summer Nights":2}
+{"Sunday":2}
+{"Surrender":2}
+{"The End":2}
+{"The Heist":2}
+{"Timeless":2}
+{"Travel Light":2}
+{"Undeniable":2}
+{"Walk With Me":2}
+{"Way Out West":2}
+{"When Johnny Comes Marching Home":2}
+{"Wrong":2}
+{"Yankee Doodle":2}
 ```
 
 ## Why?
