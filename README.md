@@ -1,213 +1,370 @@
-# WIP plan to download metadata
-
-## Instructions
-
-1. Navigate to https://www.youtube.com/audiolibrary/music  
-2. Copy cookies using the extension [cookies.txt](https://chrome.google.com/webstore/detail/cookiestxt/njabckikapfpffapmjgojcnbfjonfjfg?hl=en)  
-3. Create `cookies.txt` with `xclip -selection clipboard -o > cookies.txt` or otherwise
-
-
-
-perform requests to https://www.youtube.com/audioswap_ajax?action_get_tracks=1&dl=true&s=music&mr=25&si=0&qid=0&sh=true with `wget`/`aria2`  
-`si=mr*i&qid=i` increment `i`  
-continue until `jq .has_more output.json` is false
-
-Sound effects are https://www.youtube.com/audioswap_ajax?action_get_tracks=1&dl=true&s=soundeffects&mr=25&si=0&qid=0&sh=true
-
-```javascript
-// https://www.youtube.com/yts/jsbin/www-audiolibrary-vflqWS6UC/www-audiolibrary.js:formatted:10534
-    ;function Ip(a, b, c, d, e, f, g, h, k) {
-        function m(q, t) {
-            q in b && (n[t] = b[q])
-        }
-        var n = {};
-        b = b || {};
-        m("query", "q");
-        m("keyword", "kw");
-        m("reserved_keyword", "rkw");
-        m("title", "t");
-        m("artist", "ar");
-        m("album", "al");
-        m("genre", "g");
-        m("instrument", "it");
-        m("mood", "mo");
-        m("downloadable", "dl");
-        m("min_length", "minl");
-        m("max_length", "maxl");
-        m("section", "s");
-        m("category", "cat");
-        m("audio_revshare", "arev");
-        m("min_license_type", "minlt");
-        m("max_license_type", "maxlt");
-        m("continuation_token", "ct");
-        n.mr = c ? c : 20;
-        n.si = d || 0;
-        n.qid = a;
-        n.sh = !!e;
-        a = {
-            format: "JSON",
-            method: "GET",
-            context: k,
-            cb: n
-        };
-        f && (a.onSuccess = f);
-        g && (a.ia = g);
-        h && (a.onError = h);
-        vm("/audioswap_ajax?action_get_tracks=1", a)
-    }
-```
-
-```bash
-# max mr=1000
-aria2c --out=music0.json --load-cookies=cookies.txt 'https://www.youtube.com/audioswap_ajax?action_get_tracks=1&dl=true&s=music&mr=1000&si=0&qid=0&sh=true'
-
-jq -s '.[0].tracks = [.[].tracks | add] | .[0]' music*.json > music.json
-jq -s '.[0].tracks + .[1].tracks | {tracks: .}' music*.json > music.json # should only be dealing with 2 files at a time
-jq -s 'reduce .[] as $item ({}; . * $item)' music*.json > music.json # doesn't play well with .tracks
-
-jq -s '{ tracks: map(.tracks[]), has_more: map(.has_more) | all, qid: map(.qid) | max, continuation_token: map(.continuation_token) | add}' music?.json > music.json
-```
-
-merge with `jq` then parse  
-`aria2c` download the mp3 files  
-`id2v3` or eyeD3 for tagging  
-`beets` for additional tags?
-
-```bash
-# each on one line
-jq -c '.tracks | .[]' music.json
-
-```
-
-It's probably time for a real language 
-
-```javascript
-// an artibary track 
-// jq -S '.tracks[0]'  music.json
-{
-  "album": "None",
-  "artist": "Sir Cubworth",
-  "artist_channel_url": "/channel/UC3edSSIDJPTZmBM-m9_G3Nw",
-  "artist_url": "",
-  "category": "",
-  "display_category": "",
-  "display_genre": "Cinematic",
-  "display_mood": "Dramatic",
-  "download_url": "https://www.youtube.com/audiolibrary_download?vid=41b8cafb107b5209",
-  "downloadable": true, // I've never seen this as false?
-  "favorite": false,
-  "fp_ref_id": "41b8cafb107b5209",
-  "genre": "Cinematic",
-  "instruments": [
-    "Synth",
-    "drums",
-    "Strings",
-    "Piano"
-  ],
-  "is_new_track": false,
-  "len": 160, // length of track in seconds
-  "license_type": 1, // 0-2 no attribution required (what is the difference then?), 3-6 different CC versions
-  "mood": "Dramatic",
-  "popularity_percentile": 99,
-  "reference_vid": "41b8cafb107b5209",
-  "streamid": "4V24F_qzl1IleCjzOOkyOz772PL2xA5USYKBYN1s7sfymP6iSw4ca83D9LyK26T0",
-  "title": "Magical Triumph",
-  "track_url": "",
-  "vid": "41b8cafb107b5209",
-  "waveform_url": "https://www.youtube.com/api/editor/waveform?expire=1583982000&if=0&scale=10&editlist=Cgh3YXZlZm9ybRocCIDiCRIWChA0MWI4Y2FmYjEwN2I1MjA5EAAYAg%3D%3D&sigh=Dnzft6Eh05EiAaeKT3sPpA"
-}
-
-// https://www.youtube.com/yts/jsbin/www-audiolibrary-vflqWS6UC/www-audiolibrary.js:formatted:1193
-    function gp(a) {
-        switch (a) {
-        case 3:
-            return {
-                name: "Creative Commons Attribution",
-                url: "https://creativecommons.org/licenses/by/1.0/"
-            };
-        case 4:
-            return {
-                name: "Creative Commons Attribution",
-                url: "https://creativecommons.org/licenses/by/2.0/"
-            };
-        case 5:
-            return {
-                name: "Creative Commons Attribution",
-                url: "https://creativecommons.org/licenses/by/3.0/"
-            };
-        case 6:
-            return {
-                name: "Creative Commons Attribution",
-                url: "https://creativecommons.org/licenses/by/4.0/"
-            }
-        }
-        return null
-    }
-```
-```html
-<div class="music-templates-root hid">
-    <div class="music-attribution-monetization-section">
-You're free to use this song and monetize your video, but you must include the following in your video description:
-    </div>
-
-    <div class="music-attribution-no-monetization-section">
-You’re free to use this song in any of your videos, but you must include the following in your video description:
-    </div>
-
-    <div class="music-no-attribution-monetization-section">
-You're free to use this song and monetize your video.
-    </div>
-
-    <div class="music-no-attribution-no-monetization-section">
-You’re free to use this song in any of your videos.
-    </div>
-
-    <div id="music-attribution-template">
-      <!--
-        <div class="music-attribution license">
-<span class='attribution_title'>__title__</span> by <span class='attribution_artist'>__artist__</span> is licensed under a <span class='attribution_license'>__license_name__</span> license (<a href='__license_url__' target='blank'>__license_url__</a>)
-        </div>
-      -->
-    </div>
-
-    <div id="music-attribution-track-template">
-      <!--
-        <div class="music-attribution track">
-Source: <a href='__track_url__' target='blank'>__track_url__</a>
-        </div>
-      -->
-    </div>
-
-    <div id="music-attribution-artist-template">
-      <!--
-        <div class="music-attribution artist">
-Artist: <a href='__artist_url__' target='blank'>__artist_url__</a>
-        </div>
-      -->
-    </div>
-  </div>
-```
-
 # youtube-audio-library-download-all
 
-Some quick scripts to download the youtube audio library.  
-Downloads using aria2 have the correct filename and can resume easily.
+## Instuctions
 
-`nix-shell`  
-`mkdir music`  
-`cd music`  
-`aria2c  --auto-file-renaming=false -x 8 -j 16  -i ../music.txt`  
+1. Install [`aria2`](https://aria2.github.io/)
+2. `cd music`
+3. `aria2c  --auto-file-renaming=false --max-connection-per-server=8 --max-concurrent-downloads=16 --input-file=music-1000.txt`
 
-# Notes
+`wget --content-disposition -i music-1000.txt` or `curl` also works, but you'll have to manually parallelise it with `xargs` or `parallel`. 
+
+The overall download is ~30gb for both music and sound effects. Note that the current audio library at time of writing has the following songs with repeated titles, which may be overwritten when using the instructions. 
+
+```
+$ jq -r '[.tracks[].title] | sort | .[]' music/music-1000.json |  uniq -cd | sort -nr
+      3 March On
+      3 Lullaby
+      2 Yankee Doodle
+      2 Wrong
+      2 When Johnny Comes Marching Home
+      2 Way Out West
+      2 Walk With Me
+      2 Undeniable
+      2 Travel Light
+      2 Timeless
+      2 The Heist
+      2 The End
+      2 Surrender
+      2 Sunday
+      2 Summer Nights
+      2 Star Spangled Banner
+      2 Smooth
+      2 Serenity
+      2 Run
+      2 Rollin
+      2 Road Trip
+      2 Rise
+      2 Riding
+      2 Quiet
+      2 Procession
+      2 Pressure
+      2 Payday
+      2 Over Time
+      2 Open Highway
+      2 Night Ride
+      2 Night Drive
+      2 Mountain
+      2 Monument
+      2 Mirror Mirror
+      2 Midnight
+      2 Meteor
+      2 Level Up
+      2 Invincible
+      2 Home
+      2 Hero Theme
+      2 Happy Feet
+      2 Greedy
+      2 Granite
+      2 Funk Down
+      2 Follow Me
+      2 Firefly
+      2 Ferris Wheel
+      2 Feel The Funk
+      2 Ether
+      2 Escape
+      2 Drunken Sailor
+      2 Drive
+      2 Don't Look
+      2 Dirt Road Traveler
+      2 Destination Unknown
+      2 Cycles
+      2 Cruiser
+      2 Contact
+      2 Bittersweet
+      2 Bar Crawl
+      2 Amazing Grace
+```
+
+## Why?
 
 This is an attempt to download and clean (apply metadata) music from youtube's audio library for listening. The goal is to produce a organised local playlist that can be ingested by a music player for listening in the background. The hope is that this will aid in music discovery for creative purposes where creative commons or royalty free music is required. 
 
-At the moment downloading music has been successful but unfortunatly the list is a mess, half of the files do not have the correct genre or mood metadata.
+### Scope
 
-An attempt to categorise things with MusicBrain Picard was made, but this did not end correctly categorising everything. 
+At the moment it is outside of the scope of the project to download music from [other sources](https://creativecommons.org/about/program-areas/arts-culture/arts-culture-resources/legalmusicforvideos/). It is also currently not within the scope of the project to filter the categories before downloading. 
 
-It looks like something could be done to reverse engineer the youtube api's endpoint [https://www.youtube.com/audioswap_ajax](https://www.youtube.com/audioswap_ajax?), but this is only accessable when logged in. There is [evidence of other people using this but no official documentation](https://www.google.co.uk/search?q=youtube+audioswap_ajax). Perhaps [youtube-dl](https://github.com/ytdl-org/youtube-dl) would be some kind of starting point.
+## Intersting Statistics
 
-[Perhaps other places could be used too, but the difficulty here is verifying that the music won't be incorrectly flagged.](https://creativecommons.org/about/program-areas/arts-culture/arts-culture-resources/legalmusicforvideos/).
+```bash
++ jq '.tracks | length' music-1000.json # number of tracks
+5013
 
+++ jq '[.tracks[].len] | add' music-1000.json # total number of seconds
++ date -d@807892.5689999989 -u +%H:%M:%S # into hours minutes seconds
+08:24:52
 
++ jq '[.tracks[].instruments[]] | unique | length' music-1000.json # unique instuments
+321
+
++ jq '[.tracks[].artist] | unique | length' music-1000.json # unique artists
+215
+
++ jq -Sc '[{artist: .tracks[].artist}] | group_by(.artist) | map({artist:.[0].artist, count:length}) | sort_by(.count) | reverse | map({(.artist):.count}) | .[]' music-1000.json # artists sorted by number of tracks
+{"Kevin MacLeod":604}
+{"Silent Partner":403}
+{"Audionautix":301}
+{"Jingle Punks":180}
+{"Quincas Moreira":110}
+{"TrackTribe":100}
+{"Twin Musicom":84}
+{"Chris Zabriskie":79}
+{"Otis McDonald":74}
+{"Sir Cubworth":70}
+{"Doug Maxwell/Media Right Productions":62}
+{"The 126ers":61}
+{"E's Jammy Jams":60}
+{"Dan Lebowitz":60}
+{"Gunnar Olsen":55}
+{"Unicorn Heads":50}
+{"The Green Orbs":50}
+{"Freedom Trail Studio":50}
+{"Density & Time":50}
+{"Aakash Gandhi":50}
+{"Topher Mohr and Alex Elena":49}
+{"Coyote Hearing":48}
+{"MK2":46}
+{"Riot":43}
+{"John Deley and the 41 Players":42}
+{"United States Marine Band":41}
+{"The Whole Other":40}
+{"The Mini Vandals":40}
+{"Jesse Gallagher":40}
+{"Asher Fulero":40}
+{"Ethan Meixsell":34}
+{"Max McFerren":31}
+{"Vibe Tracks":30}
+{"Verified Picasso":30}
+{"Jeremy Blake":30}
+{"Huma-Huma":30}
+{"Geographer":30}
+{"Chris Haugen":30}
+{"Bad Snacks":30}
+{"Dan Bodan":29}
+{"Jimmy Fontanez/Media Right Productions":28}
+{"Doug Maxwell":24}
+{"Saidbysed":21}
+{"William Rosati":20}
+{"Wayne Jones":20}
+{"Text Me Records / Bobby Renz":20}
+{"Spazz Cardigan":20}
+{"South London HiFi":20}
+{"Rondo Brothers":20}
+{"Reed Mathis":20}
+{"RKVC":20}
+{"Puddle of Infinity":20}
+{"Patrick Patrikios":20}
+{"Noir Et Blanc Vie":20}
+{"Letter Box":20}
+{"Konrad OldMoney":20}
+{"Jeremy Korpas":20}
+{"JR Tundra":20}
+{"I Think I Can Help You":20}
+{"Everet Almond":20}
+{"ELPHNT":20}
+{"Dyalla":20}
+{"Diamond Ortiz":20}
+{"DJ Williams":20}
+{"Cxdy":20}
+{"Cooper Cannell":20}
+{"Biz Baz Studio":20}
+{"Bird Creek":20}
+{"Audio Hertz":20}
+{"Anno Domini Beats":20}
+{"Aaron Kenny":20}
+{"ALBIS":20}
+{"Eveningland":19}
+{"Max Surla/Media Right Productions":18}
+{"Aaron Lieberman":18}
+{"Text Me Records / Leviathe":17}
+{"Text Me Records / Jorge Hernandez":17}
+{"The U.S. Army Band":16}
+{"Josh Kirsch/Media Right Productions":16}
+{"roljui":10}
+{"pATCHES":10}
+{"ann annie":10}
+{"Yung Logos":10}
+{"White Hex":10}
+{"Wes Hutchinson":10}
+{"Vibe Mountain":10}
+{"VYEN":10}
+{"Underbelly":10}
+{"Ugonna Onyekwe":10}
+{"True Cuckoo":10}
+{"The Tower of Light":10}
+{"The Grand Affair":10}
+{"The Brothers Records":10}
+{"The 129ers":10}
+{"Text Me Records":10}
+{"Stayloose":10}
+{"Spence":10}
+{"Slenderbeats":10}
+{"Single Friend":10}
+{"Sextile":10}
+{"Sarah, The Illstrumentalist":10}
+{"SYBS":10}
+{"Rick Steel":10}
+{"Ramzoid":10}
+{"RalphReal":10}
+{"Rachel K Collier":10}
+{"RW Smith":10}
+{"RAGE":10}
+{"R.LUM.R":10}
+{"Public Memory":10}
+{"Odonis Odonis":10}
+{"Norma Rockwell":10}
+{"Nate Blaze":10}
+{"Nat Keefe with The Bow Ties":10}
+{"Nana Kwabena":10}
+{"Myuu":10}
+{"Mylar Melodies":10}
+{"Mini Vandals":10}
+{"Mikos Da Gawd":10}
+{"Mike Relm":10}
+{"Midnight North":10}
+{"Media Right Productions":10}
+{"Matt Harris":10}
+{"Magic In The Other":10}
+{"Loopop":10}
+{"Lish Grooves":10}
+{"Lauren Duski":10}
+{"Late Night Feeler":10}
+{"LATASHÁ":10}
+{"Josh Lippi & The Overtimers":10}
+{"John Deley":10}
+{"Joey Pecoraro":10}
+{"Joe Bagale":10}
+{"JVNA":10}
+{"JHS Pedals":10}
+{"JAde Wii":10}
+{"Houses of Heaven":10}
+{"Hanu Dixit":10}
+{"Hainbach":10}
+{"HOVATOFF":10}
+{"Francis Preve":10}
+{"Endless Love":10}
+{"Emily A. Sprague":10}
+{"Drew Banga":10}
+{"Dougie Wood":10}
+{"DivKid":10}
+{"Devon Church":10}
+{"Dan Henig":10}
+{"Craig MacArthur":10}
+{"Chasms":10}
+{"Causmic":10}
+{"Bruno E.":10}
+{"Birocratic":10}
+{"Au.Ra":10}
+{"Ashley Shadow":10}
+{"Andrew Langdon":10}
+{"Andrew Huang":10}
+{"Amulets":10}
+{"Slynk":9}
+{"Jason Farnham":9}
+{"Text Me Records / Social Work":8}
+{"Text Me Records / GrandBankss":8}
+{"The U.S. Marine Corps Band":7}
+{"Text Me Records / Grandbankss":7}
+{"Doug Maxwell, Jimmy Fontanez":7}
+{"United States Naval Academy Band":6}
+{"Doug Maxwell/Jimmy Fontanez":6}
+{"Nat Keefe & Hot Buttered Rum":5}
+{"Nat Keefe & BeatMower":5}
+{"Alge":5}
+{"The Midshipmen Glee Club":4}
+{"Text Me Records / Jordan Blackmon":4}
+{"Text Me Records / Hii.de":4}
+{"Ron Meixsell and Wahneta Meixsell":4}
+{"Jimmy Fontanez/Doug Maxwell":4}
+{"Doug Maxwell/ Zac Zinger":4}
+{"Beethoven":4}
+{"Wahneta Meixsell":3}
+{"Unites States Marine Band ":3}
+{"Tchaikovsky":3}
+{"Ron Meixsell":3}
+{"United States Army Herald Trumpets":2}
+{"Network 415":2}
+{"Grieg":2}
+{"Danny Kean/Doug Maxwell":2}
+{"Chopin":2}
+{"Bizet":2}
+{"Bach":2}
+{"Windows of Ken":1}
+{"Wagner":1}
+{"United States Naval Academy ":1}
+{"United States Marine Band and Arthur S.Witcomb":1}
+{"United States Marine Band ":1}
+{"USAF Heritage of America Band ":1}
+{"US Navy Academy Men's Glee Club ":1}
+{"US NavalAcademy":1}
+{"U.S. Navy Band":1}
+{"U.S. Coast Guard Band":1}
+{"U.S. Army Band":1}
+{"Strauss":1}
+{"Slynk & Kermode":1}
+{"Satie":1}
+{"Rossini":1}
+{"Offenbach":1}
+{"None":1}
+{"Mozart":1}
+{"Mendelssohn":1}
+{"Liszt":1}
+{"Kung Pao O'Malley":1}
+{"Kevin MacLeod, Syrinx Starr":1}
+{"John F. Kennedy":1}
+{"Jimmy Fontanez/Doug Maxwell/Media Right Productions":1}
+{"Handel":1}
+{"Charles Zimmerman":1}
+{"Air Force Band of Liberty":1}
+
++ jq -Scr '[{genre: .tracks[].genre}] | group_by(.genre) | map({genre: .[0].genre, count:length}) | sort_by(.count) | reverse | map({(.genre):.count}) | .[]' music-1000.json # genres sorted by number of tracks
+{"Dance & Electronic":811}
+{"Cinematic":737}
+{"Rock":491}
+{"Ambient":475}
+{"Hip Hop & Rap":473}
+{"Pop":414}
+{"Classical":412}
+{"Jazz & Blues":318}
+{"Country & Folk":313}
+{"R&B & Soul":233}
+{"Children's":94}
+{"Alternative & Punk":88}
+{"Reggae":69}
+{"Holiday":68}
+{"World":8}
+{"Hip Hop":3}
+{"Electronic":2}
+{"Country and Folk":2}
+{"None":1}
+{"Country Folk":1}
+
++ jq -Sc '[{display_mood: .tracks[].display_mood}] | group_by(.display_mood) | map({mood: .[0].display_mood, count: length}) | sort_by(.count) | reverse | map({(if .mood == null then "null" else .mood end):(.count)}) | .[]' music-1000.json # moods sorted by number of tracks
+{"Dramatic":802}
+{"Happy":674}
+{"Dark":663}
+{"Funky":635}
+{"Calm":620}
+{"Bright":603}
+{"Inspirational":464}
+{"Sad":194}
+{"Angry":190}
+{"Romantic":161}
+{"null":5} # interestingly there are 5 tracks without a mood tag
+{"dramatic":1}
+{"bright":1}
+
++ jq -Sc '.tracks | group_by(.display_mood) | map(select(.[0].display_mood == null)) | .[] | map({title:.title, artist:.artist}) | .[]' music-1000.json # tracks without a mood tag
+{"artist":"Quincas Moreira","title":"Dragonfly"}
+{"artist":"None","title":"Heading West"}
+{"artist":"Jingle Punks","title":"Working It"}
+{"artist":"Jingle Punks","title":"Red Nose Hose"}
+{"artist":"Jingle Punks","title":"You Keep Showing Up"}
+
++ jq -Sc '[{license: .tracks[].license_type}] | group_by(.license) | map({license: .[0].license, count:length}) | sort_by(.count) | reverse | group_by(.license <= 2) | map({(if .[0].license <= 2 then "No Attribution Required" else "CC BY" end):[.[].count] | add}) | .[]' music-1000.json # tracks by attribution
+{"CC BY":1059}
+{"No Attribution Required":3954}
+```
+
+## [Development, WIP and TODOs](./DEVELOPMENT.md)
+
+See [DEVELOPMENT.md](./DEVELOPMENT.md). Currently working on tagging.

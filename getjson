@@ -4,16 +4,16 @@ IFS=$'\n'
 
 function url() {
     local QID=${1:-0}
-    local MR=${2:-1000} 
+    local MR=${2:-1000}
     local S=${3:-music}
     local SI=$((QID*MR))
     echo "https://www.youtube.com/audioswap_ajax?action_get_tracks=1&dl=true&sh=true&s=${S}&mr=${MR}&si=${SI}&qid=${QID}"
 }
 
-QID=$((0))
-MR=$((1000)) # max mr=1000
-# S="music"
-S="soundeffects"
+QID=$((0))      # index for MR, see SI
+MR=$((1000))    # number of tracks to download at once, max 1000
+S="music"       # type of track
+# S="soundeffects"
 
 curl --cookie "cookies.txt" "$(url $QID $MR $S)" --output "${S}-${MR}-${QID}.json"
 while [ "$(jq '.has_more' "${S}-${MR}-${QID}.json")" = "true" ]; do
@@ -21,10 +21,21 @@ while [ "$(jq '.has_more' "${S}-${MR}-${QID}.json")" = "true" ]; do
     curl --cookie "cookies.txt" "$(url $QID $MR $S)" --output "${S}-${MR}-${QID}.json"
 done
 jq --slurp --compact-output '{ tracks: map(.tracks[]) }' "${S}-${MR}-"*.json > "${S}-${MR}.json"
+# alternatives, it would probably be wise to cleanup the ${S}-${MR}-${QID}.json files automatically
+# jq -s '.[0].tracks = [.[].tracks | add] | .[0]' music*.json > music.json
+# jq -s '.[0].tracks + .[1].tracks | {tracks: .}' music*.json > music.json # should only be dealing with 2 files at a time
 
 # output some statistics here
 set -x
 jq '.tracks | length' "${S}-${MR}.json"
+date -d@"$(jq '[.tracks[].len] | add' "${S}-${MR}.json")" -u +%H:%M:%S
+jq '[.tracks[].instruments[]] | unique | length' "${S}-${MR}.json"
+jq '[.tracks[].artist] | unique | length' "${S}-${MR}.json"
+
+jq -Sc '[{artist: .tracks[].artist}] | group_by(.artist) | map({artist:.[0].artist, count:length}) | sort_by(.count) | reverse | map({(.artist):.count}) | .[]' "${S}-${MR}.json"
+jq -Scr '[{genre: .tracks[].genre}] | group_by(.genre) | map({genre: .[0].genre, count:length}) | sort_by(.count) | reverse | map({(.genre):.count}) | .[]' "${S}-${MR}.json"
+jq -Sc '[{display_mood: .tracks[].display_mood}] | group_by(.display_mood) | map({mood: .[0].display_mood, count: length}) | sort_by(.count) | reverse | map({(if .mood == null then "null" else .mood end):(.count)}) | .[]' "${S}-${MR}.json"
+jq -Sc '[{license: .tracks[].license_type}] | group_by(.license) | map({license: .[0].license, count:length}) | sort_by(.count) | reverse | group_by(.license <= 2) | map({(if .[0].license <= 2 then "No Attribution Required" else "CC BY" end):[.[].count] | add}) | .[]' "${S}-${MR}.json"
 set +x
 
 # proper metadata stuff
@@ -33,8 +44,8 @@ set +x
 # done
 
 # just download
-jq -r '.tracks[].download_url' "${S}-${MR}.json" > "${S}-${MR}.txt"
-mkdir --parents "${S}-${MR}"
-cd "${S}-${MR}"
+# jq -r '.tracks[].download_url' "${S}-${MR}.json" > "${S}-${MR}.txt"
+# mkdir --parents "${S}-${MR}"
+# cd "${S}-${MR}"
 # aria2c --auto-file-renaming=false -x 8 -j 16 -i ../"${S}-${MR}.txt"
 

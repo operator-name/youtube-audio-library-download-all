@@ -11,12 +11,14 @@ in stdenv.mkDerivation {
     buildInputs = [
         shellcheck
 
-        writecookies
-        
+        xclip        
         curl
         aria2 
         jq
-        
+
+        writecookies
+
         picard 
+        beets
     ];
 }
