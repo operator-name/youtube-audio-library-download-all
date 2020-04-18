@@ -1,0 +1,23 @@
+# HTTP Cookie File for youtube.com by Genuinous @genuinous.
+# To download cookies for this tab click here, or download all cookies.
+# Usage Examples:
+#   1) wget -x --load-cookies cookies.txt "https://www.youtube.com/audiolibrary/music?ar=1587165000092&nv=1"
+#   2) curl --cookie cookies.txt "https://www.youtube.com/audiolibrary/music?ar=1587165000092&nv=1"
+#   3) aria2c --load-cookies cookies.txt "https://www.youtube.com/audiolibrary/music?ar=1587165000092&nv=1"
+#
+.youtube.com	TRUE	/	TRUE	1602716375	CONSENT	YES+GB.en+201912
+.youtube.com	TRUE	/	TRUE	1599685924	VISITOR_INFO1_LIVE	x5k7BefVM04
+.youtube.com	TRUE	/	FALSE	1602716375	SID	vAcQTVOpv1U7QLvnq1vcWXPKngr3e9kzwR3WDXjT1UDIloxXBIKsGhZUht0VA--K1Axcqw.
+.youtube.com	TRUE	/	TRUE	1602716375	__Secure-3PSID	vAcQTVOpv1U7QLvnq1vcWXPKngr3e9kzwR3WDXjT1UDIloxX2SsiplAR-Bexzuy5aKJSVg.
+.youtube.com	TRUE	/	FALSE	1602716375	HSID	AMZql1FRdU6Qm1VMK
+.youtube.com	TRUE	/	TRUE	1602716375	SSID	Az2o_ErUXnOJ7pxgV
+.youtube.com	TRUE	/	FALSE	1602716375	APISID	JoC4ScUg6v_F4BXM/AqgQLO_ZoES6z64w5
+.youtube.com	TRUE	/	TRUE	1602716375	SAPISID	43qtf-Zh7MjpeAcq/AWEg271pyZK8k1pVn
+.youtube.com	TRUE	/	TRUE	1596265199	__Secure-HSID	AMZql1FRdU6Qm1VMK
+.youtube.com	TRUE	/	TRUE	1596265199	__Secure-SSID	Az2o_ErUXnOJ7pxgV
+.youtube.com	TRUE	/	TRUE	1596265199	__Secure-APISID	JoC4ScUg6v_F4BXM/AqgQLO_ZoES6z64w5
+.youtube.com	TRUE	/	TRUE	1602716375	__Secure-3PAPISID	43qtf-Zh7MjpeAcq/AWEg271pyZK8k1pVn
+.youtube.com	TRUE	/	TRUE	0	YSC	ZSq7UFV7G5A
+.youtube.com	TRUE	/	FALSE	1600284362	PREF	al=en
+.youtube.com	TRUE	/	TRUE	1602716376	LOGIN_INFO	AFmmF2swRQIgYYruFKYiDnt2WmHmIH-VX3Iu_uJMJLugU3VS75iD7-oCIQDrLPCOKwNEdCVPBg3sJLHsV0KNe57pdsOG4t10UWuvWw:QUQ3MjNmeWZOZTN0OVlkc0M5T0VCeW9CQUdKVWRxbHVwNElDOTBOeURkVW13UC1fTDNKMXlRdVpTUFlvd0pFWDRkUDFIbFhKdlZYb3Q4WXhwdGZZY3ZkUWFhaTBnWDhpNUpYaTA1V281VG1JSmlpRFN3TDcwTV9yUjJSclFhYUI1Z20yQ3ZkamF3ZmdZWUN4V0FzcFpKV0t5SktwMndPTk9NN0c1WTBWUzhIZmhuNGE0S2FWcnM3Tlk5OEJGZnBrWndoLUdfWnd1TEhQRHN1S1I4R0trNUdqZ2xOeWlOWkQtVmlpQllfbjQ3UkJiU1Mtd0tWYUl6dkY4ZTJ0UVNtN05VSERJblNncXhwVA==
+.youtube.com	TRUE	/	FALSE	1602718119	SIDCC	AJi4QfGsk0IHKIlOZLG_aY-rSm_dWE208ZoqoHKBikxiwM0q231svJhGaYIc4onA4rJX9Qtg6KA
