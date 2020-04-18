@@ -1,4 +1,6 @@
 #!/nix/store/ffli6m23501dkiznwlkf6n4xvrj02snr-bash-4.4-p23/bin/bash
+set -eu -o pipefail
+IFS=$'\n'
 
 function url() {
     local QID=${1:-0}
@@ -10,11 +12,29 @@ function url() {
 
 QID=$((0))
 MR=$((1000)) # max mr=1000
-S="music"
+# S="music"
+S="soundeffects"
 
-aria2c --out="${S}-${MR}-${QID}.json" --load-cookies=cookies.txt "$(url $QID $MR $S)"
-cp "${S}-${MR}-${QID}.json" "${S}-${MR}.json"
-
-while [ $(jq '.has_more' "${S}-${MR}.json") = "true"]; do
-    echo $(jq '.has_more' "${S}-${MR}.json")
+curl --cookie "cookies.txt" "$(url $QID $MR $S)" --output "${S}-${MR}-${QID}.json"
+while [ "$(jq '.has_more' "${S}-${MR}-${QID}.json")" = "true" ]; do
+    QID=$((QID+1))
+    curl --cookie "cookies.txt" "$(url $QID $MR $S)" --output "${S}-${MR}-${QID}.json"
 done
+jq --slurp --compact-output '{ tracks: map(.tracks[]) }' "${S}-${MR}-"*.json > "${S}-${MR}.json"
+
+# output some statistics here
+set -x
+jq '.tracks | length' "${S}-${MR}.json"
+set +x
+
+# proper metadata stuff
+# for song in $(jq --compact-output '.tracks | .[]' "${S}-${MR}.json"); do
+#     echo "$song" | jq '.'
+# done
+
+# just download
+jq -r '.tracks[].download_url' "${S}-${MR}.json" > "${S}-${MR}.txt"
+mkdir --parents "${S}-${MR}"
+cd "${S}-${MR}"
+# aria2c --auto-file-renaming=false -x 8 -j 16 -i ../"${S}-${MR}.txt"
+

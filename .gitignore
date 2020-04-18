@@ -1,2 +1,4 @@
-music/
-sound_effects/
+music-*-*.*
+music-*/
+soundeffects-*-*.*
+soundeffects-*/
