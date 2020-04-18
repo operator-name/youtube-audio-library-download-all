@@ -57,7 +57,7 @@ This builds the get request, it is important to make sure that no filters are ap
     }
 ```
 
-This is an arbitary track selected using `jq -S '.tracks[0]' music/music-1000.json`.
+This is an arbitrary track selected using `jq -S '.tracks[0]' music/music-1000.json`.
 
 ```javascript
 {

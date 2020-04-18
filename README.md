@@ -8,7 +8,7 @@
 
 Change `--max-connection-per-server` and `--max-concurrent-downloads` depending on your computer, internet and when youtube starts throttling you/putting up captchas. The current numbers have been tested once overnight and did not seem to produce any issues.
 
-`wget --content-disposition -i music-1000.txt` or `curl` also works, but you'll have to manually parallelise it with `xargs` or `parallel`. `aria2` also has the benifit of being able to automatically continue if interupted.  
+`wget --content-disposition -i music-1000.txt` or `curl` also works, but you'll have to manually parallelise it with `xargs` or `parallel`. `aria2` also has the benefit of being able to automatically continue if interrupted.  
 
 The overall download is ~30gb for both music and sound effects. Note that the current audio library at time of writing has the following songs with repeated titles, which may be overwritten when using the instructions. 
 
@@ -87,7 +87,7 @@ The overall download is ~30gb for both music and sound effects. Note that the cu
 
 ## Why?
 
-This is an attempt to download and clean (apply metadata) music from youtube's audio library for listening. The goal is to produce a organised local playlist that can be ingested by a music player for listening in the background. The hope is that this will aid in music discovery for creative purposes where creative commons or royalty free music is required. 
+This is an attempt to download and clean (apply metadata) music from youtube's audio library for listening. The goal is to produce a organized local playlist that can be ingested by a music player for listening in the background. The hope is that this will aid in music discovery for creative purposes where creative commons or royalty free music is required. 
 
 ### Scope
 
@@ -446,7 +446,7 @@ Youtube is always adding new tracks to their audio library. When development sta
 ```
 </details>
 
-There are quite a few instruments, but here we find our first questionable pieces of data. `"'Bass'"` and `"'Drums'"` are additional fields to `"Bass"`and `"Drums"` and `"base"` and `"drums"`. Many fields have upper and lowercase counterparts, but it seems that the api ignores case so this is not an issue when using the iterface. Somewhat strangely there is also a instrument called `"_audiolibrary_featured"`.
+There are quite a few instruments, but here we find our first questionable pieces of data. `"'Bass'"` and `"'Drums'"` are additional fields to `"Bass"`and `"Drums"` and `"base"` and `"drums"`. Many fields have upper and lowercase counterparts, but it seems that the api ignores case so this is not an issue when using the interface. Somewhat strangely there is also a instrument called `"_audiolibrary_featured"`.
 
 ```javascript
 // jq '[.tracks[].instruments[] | ascii_downcase] | unique | length' music-1000.json
@@ -1034,4 +1034,4 @@ jq -S '[{license: .tracks[].license_type}] | group_by(.license) | map({license: 
 
 ## [Development, WIP and TODOs](./DEVELOPMENT.md)
 
-See [DEVELOPMENT.md](./DEVELOPMENT.md). Currently working on tagging.
+See [DEVELOPMENT.md](./DEVELOPMENT.md) for more details. Currently working on tagging.
