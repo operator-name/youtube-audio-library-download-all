@@ -13,7 +13,7 @@ Change `--max-connection-per-server` and `--max-concurrent-downloads` depending 
 The overall download is ~30gb for both music and sound effects. Note that the current audio library at time of writing has the following songs with repeated titles, which may be overwritten when using the instructions. 
 
 
-```bash
+```json
 $ jq -Sc '[{title:.tracks[].title}] | group_by(.title) | map(select(length > 1)) | map({(.[0].title):length}) | .[]' music-1000.json # select tracks with the same title
 {"Amazing Grace":2}
 {"Bar Crawl":2}
@@ -99,13 +99,13 @@ At the moment it is outside of the scope of the project to download music from [
 
 Youtube is always adding new tracks to their audio library. When development started there were only 4378 tracks.
 
-```bash
+```json
 $ jq '.tracks | length' music-1000.json
 5013
 ```
 
 ### Total length of all tracks
-```bash
+```json
 $ jq -S '[.tracks[].len] | add | {hours:(./60/60%24), minutes:(./60%60), seconds:(.%60)}' music-1000.json
 {
   "hours": 8,
@@ -448,20 +448,20 @@ $ jq -S '[.tracks[].instruments[]] | unique | .[] ' music-1000.json
 
 There are quite a few instruments, but here we find our first questionable pieces of data. `"'Bass'"` and `"'Drums'"` are additional fields to `"Bass"`and `"Drums"` and `"base"` and `"drums"`. Many fields have upper and lowercase counterparts, but it seems that the api ignores case so this is not an issue when using the iterface. Somewhat strangely there is also a instrument called `"_audiolibrary_featured"`.
 
-```bash
+```json
 $ jq '[.tracks[].instruments[] | ascii_downcase] | unique | length' music-1000.json
 250
 ```
 
 ### Number of unique artists
-```bash
+```json
 $ jq '[.tracks[].artist] | unique | length' music-1000.json
 215
 ```
 
 ### Artists sorted by number of tracks 
 
-```bash
+```json
 $ jq -Sc '.tracks | group_by(.artist) | map({artist:.[0].artist, len:([.[].len] | add), count:length}) | sort_by(.count) | reverse | map({(.artist):({len:.len,count:.count} | {count:.count, hours:(.len/60/60%24), minutes:(.len/60%60), seconds:(.len%60)})}) | .[]' music-1000.json
 {"Kevin MacLeod":{"count":604,"hours":6,"minutes":17,"seconds":59}}
 {"Silent Partner":{"count":403,"hours":16,"minutes":27,"seconds":40}}
@@ -690,7 +690,7 @@ $ jq -Sc '.tracks | group_by(.artist) | map({artist:.[0].artist, len:([.[].len] 
 When it comes to number of tracks, Kevin MacLeod, king of CC BY music comes up on top. What is interesting is that SilentPartner and Audionautix who come in second and third have produced more music by length.
 
 ### Genres sorted by number of tracks
-```bash
+```json
 $ jq -Sc '.tracks | group_by(.genre) | map({genre:.[0].genre, len:([.[].len] | add), count:length}) | sort_by(.count) | reverse | map({(.genre):({len:.len,count:.count} | {count:.count, hours:(.len/60/60%24), minutes:(.len/60%60), seconds:(.len%60)})}) | .[]' music-1000.json
 {"Dance & Electronic":{"count":811,"hours":16,"minutes":0,"seconds":49}}
 ...
@@ -726,7 +726,7 @@ As can be seen interestingly there is one song which has the genre of "None" - [
 <details>
   <summary>Show the track json</summary>
 
-```bash
+```json
 $ jq -S '.tracks | group_by(.genre) | map(select(.[0].genre == "None")) | .[][]' music-1000.json
 {
   "album": "None",
@@ -760,7 +760,7 @@ $ jq -S '.tracks | group_by(.genre) | map(select(.[0].genre == "None")) | .[][]'
 
 ### Mood sorted by number of tracks
 
-```bash
+```json
  jq -Sc '.tracks | group_by(.mood) | map({mood:.[0].mood, len:([.[].len] | add), count:length}) | sort_by(.count) | reverse | map({(if .mood == null then "null" else .mood end):({len:.len,count:.count} | {count:.count, hours:(.len/60/60%24), minutes:(.len/60%60), seconds:(.len%60)})}) | .[]' music-1000.json
 {"Dramatic":{"count":802,"hours":12,"minutes":12,"seconds":29}}
 ...
@@ -1026,7 +1026,7 @@ jq -S '[{license: .tracks[].license_type}] | group_by(.license) | map({license: 
 ```
 </details>
 
-```bash
+```json
 $ jq -Sc '[{license: .tracks[].license_type}] | group_by(.license) | map({license: .[0].license, count:length}) | sort_by(.count) | reverse | group_by(.license <= 2) | map({(if .[0].license <= 2 then "No Attribution Required" else "CC BY" end):[.[].count] | add}) | .[]' music-1000.json
 {"CC BY":1059}
 {"No Attribution Required":3954}
