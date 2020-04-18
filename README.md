@@ -350,7 +350,7 @@ At the moment it is outside of the scope of the project to download music from [
 {"Angry":190}
 {"Romantic":161}
 {"null":5} # interestingly there are 5 tracks without a mood tag
-{"dramatic":1}
+{"dramatic":1} # two songs were tagged with lowercase whereas the rest are tagged with uppercase
 {"bright":1}
 
 + jq -Sc '.tracks | group_by(.display_mood) | map(select(.[0].display_mood == null)) | .[] | map({title:.title, artist:.artist}) | .[]' music-1000.json # tracks without a mood tag
@@ -359,6 +359,10 @@ At the moment it is outside of the scope of the project to download music from [
 {"artist":"Jingle Punks","title":"Working It"}
 {"artist":"Jingle Punks","title":"Red Nose Hose"}
 {"artist":"Jingle Punks","title":"You Keep Showing Up"}
+
++ jq -Sc '.tracks | map(select(.display_mood == "dramatic" or .display_mood == "bright")) | map({title:.title, artist:.artist}) | .[]' music-1000.json # tracks that were tagged with lowercase moods 
+{"artist":"Max Surla/Media Right Productions","title":"Black and White"}
+{"artist":"Max Surla/Media Right Productions","title":"Animal"}
 
 + jq -Sc '[{license: .tracks[].license_type}] | group_by(.license) | map({license: .[0].license, count:length}) | sort_by(.count) | reverse | group_by(.license <= 2) | map({(if .[0].license <= 2 then "No Attribution Required" else "CC BY" end):[.[].count] | add}) | .[]' music-1000.json # tracks by attribution
 {"CC BY":1059}
