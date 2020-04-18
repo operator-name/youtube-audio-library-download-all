@@ -85,6 +85,12 @@ The overall download is ~30gb for both music and sound effects. Note that the cu
 ```
 </details>
 
+### Optional "automatic" tagging
+1. Install [`beets`](https://github.com/beetbox/beets) with [Chromaprint](https://beets.readthedocs.io/en/stable/plugins/chroma.html)
+2. `beet import -qa music/`
+
+Tagging accuracy cannot be guaranteed.
+
 ## Why?
 
 This is an attempt to download and clean (apply metadata) music from youtube's audio library for listening. The goal is to produce a organized local playlist that can be ingested by a music player for listening in the background. The hope is that this will aid in music discovery for creative purposes where creative commons or royalty free music is required. 
