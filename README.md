@@ -729,6 +729,8 @@ When it comes to number of tracks, Kevin MacLeod, king of CC BY music comes up o
 
 As can be seen interestingly there is one song which has the genre of "None" - [Heading West](https://www.youtube.com/watch?v=wmvBMacUShI) ([mp3](https://www.youtube.com/audiolibrary_download?vid=acb5fd608ed48dfa)). Unfortuantly this song is missing a lot of its tags, and has the incorrect license type. As seen on the [youtube video's description](https://www.youtube.com/watch?v=wmvBMacUShI) was originally licensed under CC BY 3.0 and then upgraded via the [website](https://www.youtube.com/watch?v=wmvBMacUShI) to CC BY 4.0. 
 
+![How it shows up in the youtube audio library](./headingwest.png)
+
 <details>
   <summary>Show the track json</summary>
 
